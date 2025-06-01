@@ -25,8 +25,6 @@ int main(int argc, char** argv) {
         "      -h          for https        (default: https)\n"
         "      -f          for hard reset   (default: checkout)\n"
         "      -r          for recursive    (default: false)\n"
-        "      --drop-wip  check out ref from .pkg even though there are\n"
-        "                  unpushed changes (default: false)\n"
         "      --ssh       clone using ssh  (default: https)\n"
         "  pkg status | -s    [print status]\n"
         "\n"
@@ -49,8 +47,7 @@ int main(int argc, char** argv) {
       load_deps(fs::path{"."}, fs::path("deps"),  //
                 !ssh,  //
                 has_flag(args, "-f"),  //
-                has_flag(args, "-r"),  //
-                has_flag(args, "--drop-wip"));
+                has_flag(args, "-r"));
     } else if (mode == "status" || mode == "-s") {
       print_status(fs::path{"."}, fs::path("deps"));
     } else {

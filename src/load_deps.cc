@@ -27,8 +27,11 @@ namespace fs = boost::filesystem;
 namespace pkg {
 
 void load_deps(fs::path const& repo, fs::path const& deps_root,
-               bool const clone_https, bool const force, bool const recursive,
-               bool const drop_wip) {
+               bool const clone_https, bool const force, bool const recursive) {
+  if (force) {
+    std::cout << "Warning: -f can delete your work in progress\n";
+  }
+
   if (!boost::filesystem::is_directory(deps_root)) {
     boost::filesystem::create_directories(deps_root);
   }
@@ -144,7 +147,7 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
       }
       executor ex;
       try {
-        if (!drop_wip) {
+        if (!force) {
           auto const remote_refs =
               ex.exec(d->path_,
                       "git branch -r --contains HEAD --format '%(refname)'")
@@ -153,8 +156,7 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
           if (num_refs == 0) {
             fmt::println(
                 "warning: {} has commits that have not been pushed yet. "
-                "Use --drop-wip to check out the commit from .pkg "
-                "nevertheless.",
+                "Use -f to check out the commit from .pkg nevertheless.",
                 d->path_.string());
             continue;
           }
