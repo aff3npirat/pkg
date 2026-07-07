@@ -69,6 +69,23 @@ std::string git_shorten(dep const* d, std::string const& commit) {
   return out;
 }
 
+std::string get_remote(boost::filesystem::path const& p,
+                       std::string const& url) {
+  auto const out = exec(p, "git remote").out_;
+  std::string remote{"origin"};
+  utl::skip_lines(out, [&](utl::cstr s) {
+    auto remote_url = exec(p, "git remote get-url {}", s.to_str()).out_;
+    if (remote_url.contains(url) || url.contains(remote_url)) {
+      remote = s.to_str();
+      return false;
+    }
+
+    return true;
+  });
+
+  return remote;
+}
+
 std::string get_commit(executor& e, boost::filesystem::path const& p,
                        std::string const& target = "HEAD") {
   auto out = exec(p, "git rev-parse {}", target).out_;
