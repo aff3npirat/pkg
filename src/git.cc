@@ -99,8 +99,9 @@ void git_attach(executor& e, dep const* d, bool const force) {
   }
 
   if (!commit_exists(d, d->commit_)) {
-    e.exec(d->path_, "git fetch origin");
-    e.exec(d->path_, "git checkout -B {} origin/{}", d->branch_, d->branch_);
+    e.exec(d->path_, "git fetch {}", d->remote_);
+    e.exec(d->path_, "git checkout -B {} {}/{}", d->branch_, d->remote_,
+           d->branch_);
   }
 
   std::string branch_head_commit;
