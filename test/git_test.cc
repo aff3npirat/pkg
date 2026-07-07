@@ -32,10 +32,7 @@ void setup() {
 TEST_CASE("get_remote") {
   setup();
 
-  auto const result = get_remote(test_repo, "git@github.com:bar/bar.git");
-  auto const test_val =
-      ("remoteA" == result) || ("remoteB" == result) || ("remoteC" == result);
-  CHECK(test_val);
+  CHECK("remoteA" == get_remote(test_repo, "git@github.com:bar/bar.git"));
   CHECK("remoteD" == get_remote(test_repo, "ssh://git@github.com:baz/baz.git"));
   CHECK("origin" == get_remote(test_repo, "git@github.com:oof/oof.git"));
   CHECK("remoteE" == get_remote(test_repo, "git@github.com:zab/zab.git"));
