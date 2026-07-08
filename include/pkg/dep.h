@@ -42,7 +42,7 @@ struct dep {
   }
 
   boost::filesystem::path path_;
-  std::string url_, remote_, commit_, branch_;
+  std::string url_, commit_, branch_;
   std::set<dep*> preds_;
   std::set<dep*> succs_;
 

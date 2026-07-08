@@ -13,7 +13,6 @@ dep::dep(boost::filesystem::path const& deps_root, std::string url,
          std::string commit, std::string branch)
     : path_{deps_root / name_from_url(url)},
       url_{std::move(url)},
-      remote_{get_remote(path_, url_)},
       commit_{std::move(commit)},
       branch_{std::move(branch)} {}
 
