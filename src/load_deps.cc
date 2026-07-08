@@ -43,7 +43,7 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
         // Fetch if commit is not known.
         if (!commit_exists(d, d->commit_) ||
             (d->commit_ != bc.commit_ && !commit_exists(d, bc.commit_))) {
-          auto remote = get_remote(e, d->path_, d->url_);
+          auto const remote = get_remote(e, d->path_, d->url_);
           fmt::print("{} ({}): fetch\n", d->name(), remote);
 
           std::cout << std::flush;

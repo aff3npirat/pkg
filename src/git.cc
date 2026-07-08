@@ -103,7 +103,7 @@ void git_attach(executor& e, dep const* d, bool const force) {
   }
 
   if (!commit_exists(d, d->commit_)) {
-    auto remote = get_remote(e, d->path_, d->url_);
+    auto const remote = get_remote(e, d->path_, d->url_);
     e.exec(d->path_, "git fetch {}", remote);
     e.exec(d->path_, "git checkout -B {} {}/{}", d->branch_, remote,
            d->branch_);
