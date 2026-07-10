@@ -22,10 +22,6 @@ TEST_CASE("get_remote") {
   if (fs::exists(test_repo)) {
     fs::remove_all(test_repo);
   }
-
-  auto e = pkg::executor{};
-  CHECK("origin" == get_remote(e, test_repo, "git"));
-
   fs::create_directory(test_repo);
   exec(test_repo, "git init");
   exec(test_repo, "git remote add origin git@github.com:foo/foo.git");
@@ -36,6 +32,7 @@ TEST_CASE("get_remote") {
   exec(test_repo, "git remote add remoteE git@github.com:zab/zab.git");
   exec(test_repo, "git remote set-url --push remoteE read-only");
 
+  auto e = pkg::executor{};
   CHECK("remoteA" == get_remote(e, test_repo, "git@github.com:bar/bar.git"));
   CHECK("remoteD" ==
         get_remote(e, test_repo, "ssh://git@github.com:baz/baz.git"));

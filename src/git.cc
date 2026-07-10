@@ -71,10 +71,6 @@ std::string git_shorten(dep const* d, std::string const& commit) {
 
 std::string get_remote(executor& e, boost::filesystem::path const& p,
                        std::string const& url) {
-  if (!boost::filesystem::is_directory(p)) {
-    return "origin";
-  }
-
   auto const out = e.exec(p, "git remote").out_;
   std::string remote{"origin"};
   utl::skip_lines(out, [&](utl::cstr s) {
