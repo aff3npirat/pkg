@@ -69,6 +69,23 @@ std::string git_shorten(dep const* d, std::string const& commit) {
   return out;
 }
 
+std::string get_remote(executor& e, boost::filesystem::path const& p,
+                       std::string const& url) {
+  auto const out = e.exec(p, "git remote").out_;
+  std::string remote{"origin"};
+  utl::skip_lines(out, [&](utl::cstr s) {
+    auto remote_url = exec(p, "git remote get-url {}", s.to_str()).out_;
+    if (remote_url.contains(url) || url.contains(remote_url)) {
+      remote = s.to_str();
+      return false;
+    }
+
+    return true;
+  });
+
+  return remote;
+}
+
 std::string get_commit(executor& e, boost::filesystem::path const& p,
                        std::string const& target = "HEAD") {
   auto out = exec(p, "git rev-parse {}", target).out_;
@@ -82,8 +99,10 @@ void git_attach(executor& e, dep const* d, bool const force) {
   }
 
   if (!commit_exists(d, d->commit_)) {
-    e.exec(d->path_, "git fetch origin");
-    e.exec(d->path_, "git checkout -B {} origin/{}", d->branch_, d->branch_);
+    auto const remote = get_remote(e, d->path_, d->url_);
+    e.exec(d->path_, "git fetch {}", remote);
+    e.exec(d->path_, "git checkout -B {} {}/{}", d->branch_, remote,
+           d->branch_);
   }
 
   std::string branch_head_commit;

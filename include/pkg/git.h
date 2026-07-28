@@ -28,6 +28,9 @@ void git_clone(executor&, dep const*, bool clone_https);
 
 void git_attach(executor&, dep const*, bool force);
 
+std::string get_remote(executor&, boost::filesystem::path const& p,
+                       std::string const& url);
+
 std::string get_commit(boost::filesystem::path const& p,
                        std::string const& target = "HEAD");
 
