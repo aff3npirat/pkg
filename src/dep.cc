@@ -3,7 +3,6 @@
 #include <fstream>
 #include <ostream>
 
-#include "pkg/git.h"
 #include "pkg/name_from_url.h"
 
 namespace pkg {

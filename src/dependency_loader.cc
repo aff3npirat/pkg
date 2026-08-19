@@ -6,7 +6,6 @@
 #include "utl/to_vec.h"
 #include "utl/verify.h"
 
-#include "pkg/git.h"
 #include "pkg/read_deps.h"
 
 namespace fs = boost::filesystem;

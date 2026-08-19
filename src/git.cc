@@ -1,4 +1,5 @@
 #include "pkg/git.h"
+#include <fmt/base.h>
 
 #include <algorithm>
 
@@ -113,9 +114,7 @@ void git_attach(executor& e, dep const* d, bool const force) {
   }
 
   if (!commit_exists(d, d->commit_)) {
-    auto const remote = get_remote(e, d->path_, d->url_);
-    fmt::print("{} ({}): fetch\n", d->name(), remote);
-    e.exec(d->path_, "git fetch {}", remote);
+    e.exec(d->path_, "git fetch {}", get_remote(e, d->path_, d->url_));
   }
 
   auto const ref = as_branch(e, d->path_, d->commit_);

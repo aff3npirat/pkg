@@ -2,18 +2,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <mutex>
-#include <thread>
-#include <vector>
 
 #include "boost/filesystem.hpp"
 #include "boost/interprocess/sync/file_lock.hpp"
 #include "boost/interprocess/sync/scoped_lock.hpp"
-
-#include "fmt/format.h"
-
-#include "utl/parser/file.h"
-#include "utl/to_set.h"
 
 #include "cista/hashing.h"
 
@@ -36,17 +28,18 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
     boost::filesystem::create_directories(deps_root);
   }
 
-  auto const iterator = [&](dep* d, std::string const& pred_target) {
+  auto const iterator = [&](dep* d, std::string const& pred_commit) {
     if (fs::is_directory(d->path_)) {
       executor e;
       try {
         // Fetch if commit is not known.
-        if (!commit_exists(d, d->commit_) ||
-            (d->commit_ != pred_target && !commit_exists(d, pred_target))) {
+        if (!commit_exists(d, d->commit_)) {
           auto const remote = get_remote(e, d->path_, d->url_);
           e.exec(d->path_, "git remote set-url {} {}", remote,
                  url_to_protocol(
                      d->url_, clone_https ? protocol::kHttps : protocol::kSsh));
+          fmt::print("{} ({}): fetch\n", d->name(), remote);
+          e.exec(d->path_, "git fetch {}", remote);
           if (clone_https) {
             // Push needs to use ssh even with http
             e.exec(d->path_, "git remote set-url --push {} {}", remote,
@@ -55,9 +48,9 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
         }
 
         // Select latest known commit.
-        if (d->commit_ != pred_target &&
-            commit_time(d, d->commit_) < commit_time(d, pred_target)) {
-          d->commit_ = pred_target;
+        if (d->commit_ != pred_commit &&
+            commit_time(d, d->commit_) < commit_time(d, pred_commit)) {
+          d->commit_ = pred_commit;
         }
       } catch (std::exception const& ex) {
         fmt::print("Rev-Update failed for {}: {}\n", d->name(), ex.what());
