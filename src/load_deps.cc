@@ -164,8 +164,8 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
           }
         }
 
-        git_attach(ex, d, force);
         fmt::print("{}: checkout {}\n", d->name(), git_shorten(d, d->commit_));
+        git_attach(ex, d, force);
         repeat = true;
       } catch (std::exception const& e) {
         fmt::print("Checkout failed for {}: {}\n", d->name(), e.what());

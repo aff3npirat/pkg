@@ -1,9 +1,8 @@
 #include "pkg/git.h"
 
 #include <algorithm>
-#include <iostream>
 
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 #include "utl/erase.h"
 #include "utl/parser/cstr.h"
@@ -93,6 +92,21 @@ std::string get_commit(executor& e, boost::filesystem::path const& p,
   return out;
 }
 
+std::string as_branch(executor& e, boost::filesystem::path const& p,
+                      std::string commit) {
+  auto const out = e.exec(p, "git show-ref --branches").out_;
+  auto branch = commit;
+  utl::skip_lines(out, [&](utl::cstr s) {
+    if (s.substr(0, commit.length()) == commit) {
+      branch = s.substr(commit.length() + 1).to_str();
+      return false;
+    }
+    return true;
+  });
+
+  return branch;
+}
+
 void git_attach(executor& e, dep const* d, bool const force) {
   if (get_commit(e, d->path_) == d->commit_) {
     return;
@@ -100,21 +114,11 @@ void git_attach(executor& e, dep const* d, bool const force) {
 
   if (!commit_exists(d, d->commit_)) {
     auto const remote = get_remote(e, d->path_, d->url_);
+    fmt::print("{} ({}): fetch\n", d->name(), remote);
     e.exec(d->path_, "git fetch {}", remote);
-    e.exec(d->path_, "git checkout -B {} {}/{}", d->branch_, remote,
-           d->branch_);
   }
 
-  std::string branch_head_commit;
-  try {
-    branch_head_commit = get_commit(e, d->path_, d->branch_);
-  } catch (std::exception const& e) {
-    fmt::print("warning: unknown branch {} for dependency {}\n", d->branch_,
-               d->name());
-    std::cout << std::flush;
-  }
-  auto const is_branch_head = branch_head_commit == d->commit_;
-  auto const ref = is_branch_head ? d->branch_ : d->commit_;
+  auto const ref = as_branch(e, d->path_, d->commit_);
   force ? e.exec(d->path_, "git reset --hard {}", ref)
         : e.exec(d->path_, "git checkout {}", ref);
 
