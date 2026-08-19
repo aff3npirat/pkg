@@ -36,17 +36,14 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
     boost::filesystem::create_directories(deps_root);
   }
 
-  auto const iterator = [&](dep* d, branch_commit const& bc) {
+  auto const iterator = [&](dep* d, std::string const& pred_target) {
     if (fs::is_directory(d->path_)) {
       executor e;
       try {
         // Fetch if commit is not known.
         if (!commit_exists(d, d->commit_) ||
-            (d->commit_ != bc.commit_ && !commit_exists(d, bc.commit_))) {
+            (d->commit_ != pred_target && !commit_exists(d, pred_target))) {
           auto const remote = get_remote(e, d->path_, d->url_);
-          fmt::print("{} ({}): fetch\n", d->name(), remote);
-
-          std::cout << std::flush;
           e.exec(d->path_, "git remote set-url {} {}", remote,
                  url_to_protocol(
                      d->url_, clone_https ? protocol::kHttps : protocol::kSsh));
@@ -55,14 +52,12 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
             e.exec(d->path_, "git remote set-url --push {} {}", remote,
                    url_to_protocol(d->url_, protocol::kSsh));
           }
-          e.exec(d->path_, "git fetch {}", remote);
         }
 
         // Select latest known commit.
-        if (d->commit_ != bc.commit_ &&
-            commit_time(d, d->commit_) < commit_time(d, bc.commit_)) {
-          d->commit_ = bc.commit_;
-          d->branch_ = bc.branch_;
+        if (d->commit_ != pred_target &&
+            commit_time(d, d->commit_) < commit_time(d, pred_target)) {
+          d->commit_ = pred_target;
         }
       } catch (std::exception const& ex) {
         fmt::print("Rev-Update failed for {}: {}\n", d->name(), ex.what());
@@ -101,7 +96,9 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
   }();
 
   auto const name = (fs::absolute(repo) / ".pkg.mutex").generic_string();
-  { auto const create_file_if_not_exists = std::ofstream{name}; }
+  {
+    auto const create_file_if_not_exists = std::ofstream{name};
+  }
   auto lock = boost::interprocess::file_lock{name.c_str()};
   if (!lock.try_lock()) {
     std::cout << "waiting for lock" << std::endl;

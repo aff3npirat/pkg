@@ -165,11 +165,11 @@ std::string commit(boost::filesystem::path const& p, std::string const& msg) {
 void push(boost::filesystem::path const& p) { exec(p, "git push"); }
 
 std::vector<commit_info> get_commit_infos(
-    boost::filesystem::path const& p, std::set<branch_commit> const& commits) {
-  auto infos = utl::to_vec(commits, [&](auto&& bc) -> commit_info {
-    auto info = exec(p, "git show -s --format=%at {}", bc.commit_).out_;
+    boost::filesystem::path const& p, std::set<std::string> const& commits) {
+  auto infos = utl::to_vec(commits, [&](auto&& c) -> commit_info {
+    auto info = exec(p, "git show -s --format=%at {}", c).out_;
     info.resize(info.size() - 1);
-    return {info, bc};
+    return {info, c};
   });
   std::sort(begin(infos), end(infos), std::greater<>());
   return infos;

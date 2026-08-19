@@ -3,18 +3,16 @@
 #include <fstream>
 #include <ostream>
 
-#include "pkg/detect_branch.h"
 #include "pkg/git.h"
 #include "pkg/name_from_url.h"
 
 namespace pkg {
 
 dep::dep(boost::filesystem::path const& deps_root, std::string url,
-         std::string commit, std::string branch)
+         std::string commit)
     : path_{deps_root / name_from_url(url)},
       url_{std::move(url)},
-      commit_{std::move(commit)},
-      branch_{std::move(branch)} {}
+      commit_{std::move(commit)} {}
 
 void dep::write_pkg_file() const {
   std::vector<dep*> succs{begin(succs_), end(succs_)};
@@ -23,10 +21,8 @@ void dep::write_pkg_file() const {
 
   std::ofstream f{pkg_file().string().c_str()};
   for (auto const s : succs) {
-    detect_branch(s);
     f << "[" << s->name() << "]\n"  //
       << "  url=" << s->url_ << "\n"  //
-      << "  branch=" << s->branch_ << "\n"  //
       << "  commit=" << s->commit_ << "\n";
   }
 }
@@ -35,7 +31,6 @@ dep dep::root(boost::filesystem::path const& root_repo) {
   dep d;
   d.path_ = root_repo;
   d.url_ = ROOT;
-  d.branch_ = ROOT;
   return d;
 }
 

@@ -15,7 +15,7 @@ namespace pkg {
 struct commit_info {
   CISTA_COMPARABLE()
   std::string info_;
-  branch_commit bc_;
+  std::string commit_;
 };
 
 enum protocol { kSsh, kHttps };
@@ -38,8 +38,8 @@ std::string commit(boost::filesystem::path const& p, std::string const& msg);
 
 void push(boost::filesystem::path const& p);
 
-std::vector<commit_info> get_commit_infos(
-    boost::filesystem::path const& p, std::set<branch_commit> const& commits);
+std::vector<commit_info> get_commit_infos(boost::filesystem::path const& p,
+                                          std::set<std::string> const& commits);
 
 bool commit_exists(dep const*, std::string const& commit);
 

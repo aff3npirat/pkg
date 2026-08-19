@@ -50,6 +50,8 @@ std::set<dep> read_deps(fs::path const& deps_root,
   pt::read_ini(ss, tree);
   return utl::to_set(tree, [&](auto const& entry) {
     auto const& settings = entry.second;
+    // Branch is never used. Left only for compatibility with old .pkg
+    // files
     return dep{deps_root,
                settings.template get<std::string>(pt::path{"url"}, ""),
                settings.template get<std::string>(pt::path{"commit"}, ""),
