@@ -2,6 +2,7 @@
 #include <fmt/base.h>
 
 #include <algorithm>
+#include <optional>
 
 #include <boost/filesystem.hpp>
 
@@ -93,10 +94,11 @@ std::string get_commit(executor& e, boost::filesystem::path const& p,
   return out;
 }
 
-std::string as_branch(executor& e, boost::filesystem::path const& p,
-                      std::string commit) {
+std::optional<std::string> as_branch(executor& e,
+                                     boost::filesystem::path const& p,
+                                     std::string commit) {
   auto const out = e.exec(p, "git show-ref --branches").out_;
-  auto branch = commit;
+  auto branch = std::optional<std::string>{};
   utl::skip_lines(out, [&](utl::cstr s) {
     if (s.substr(0, commit.length()) == commit) {
       branch = s.substr(commit.length() + 1).to_str();
@@ -117,9 +119,16 @@ void git_attach(executor& e, dep const* d, bool const force) {
     e.exec(d->path_, "git fetch {}", get_remote(e, d->path_, d->url_));
   }
 
-  auto const ref = as_branch(e, d->path_, d->commit_);
-  force ? e.exec(d->path_, "git reset --hard {}", ref)
-        : e.exec(d->path_, "git checkout {}", ref);
+  if (auto const branch = as_branch(e, d->path_, d->commit_);
+      branch.has_value()) {
+    force ? e.exec(d->path_, "git reset --hard {}", branch.value())
+          : e.exec(d->path_, "git checkout {}", branch.value());
+  } else if (force) {
+    e.exec(d->path_, "get checkout --detach");
+    e.exec(d->path_, "git reset --hard {}", d->commit_);
+  } else {
+    e.exec(d->path_, "git checkout {}", d->commit_);
+  }
 
   if (boost::filesystem::exists(d->path_ / ".gitmodules")) {
     e.exec(d->path_, "git submodule sync");
