@@ -1,5 +1,6 @@
 #include "pkg/dep.h"
 
+#include <algorithm>
 #include <fstream>
 #include <ostream>
 
