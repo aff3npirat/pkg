@@ -6,7 +6,6 @@ Example `.pkg` file:
 
     [fmt]
       url=git@github.com:motis-project/fmt.git
-      branch=master
       commit=3eca62d66c7c9a2ca97dc8381299d911978b9fb2
 
 ## Useful commands
@@ -27,7 +26,7 @@ Effectively, `git` repositories will be updated in `deps/`.
 You can use `-f` to force checkout the commits.
 
 > [!WARNING]
-> This will override the changes you made, so be careful.
+> This will override uncommitted changes you made, so be careful.
 
 ### Workflow
 
