@@ -127,15 +127,13 @@ void git_attach(executor& e, dep const* d, bool const force) {
     e.exec(d->path_, "git fetch {}", get_remote(e, d->path_, d->url_));
   }
 
-  if (auto const branch = as_branch(e, d->path_, d->commit_);
-      branch.has_value()) {
-    force ? e.exec(d->path_, "git reset --hard {}", branch.value())
-          : e.exec(d->path_, "git checkout {}", branch.value());
-  } else if (force) {
+  auto const branch = as_branch(e, d->path_, d->commit_);
+  auto const target = branch.has_value() ? branch.value() : d->commit_;
+  if (force) {
     e.exec(d->path_, "get checkout --detach");
-    e.exec(d->path_, "git reset --hard {}", d->commit_);
+    e.exec(d->path_, "git reset --hard {}", target);
   } else {
-    e.exec(d->path_, "git checkout {}", d->commit_);
+    e.exec(d->path_, "git checkout {}", target);
   }
 
   if (boost::filesystem::exists(d->path_ / ".gitmodules")) {
