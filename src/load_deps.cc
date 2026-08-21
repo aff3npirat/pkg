@@ -28,12 +28,12 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
     boost::filesystem::create_directories(deps_root);
   }
 
-  auto const iterator = [&](dep* d, std::string const& pred_commit) {
+  auto const iterator = [&](dep* d, std::string const& commit) {
     if (fs::is_directory(d->path_)) {
       executor e;
       try {
         // Fetch if commit is not known.
-        if (!commit_exists(d, d->commit_)) {
+        if (!commit_exists(d, commit)) {
           auto const remote = get_remote(e, d->path_, d->url_);
           e.exec(d->path_, "git remote set-url {} {}", remote,
                  url_to_protocol(
@@ -48,9 +48,9 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
         }
 
         // Select latest known commit.
-        if (d->commit_ != pred_commit &&
-            commit_time(d, d->commit_) < commit_time(d, pred_commit)) {
-          d->commit_ = pred_commit;
+        if (d->commit_ != commit &&
+            commit_time(d, d->commit_) < commit_time(d, commit)) {
+          d->commit_ = commit;
         }
       } catch (std::exception const& ex) {
         fmt::print("Rev-Update failed for {}: {}\n", d->name(), ex.what());
