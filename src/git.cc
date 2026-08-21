@@ -2,6 +2,7 @@
 #include <fmt/base.h>
 
 #include <algorithm>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 
@@ -96,17 +97,19 @@ std::string get_commit(executor& e, boost::filesystem::path const& p,
 std::optional<std::string> as_branch(executor& e,
                                      boost::filesystem::path const& p,
                                      std::string const& commit) {
-  auto const out = e.exec(p, "git show-ref --branches").out_;
-  auto branch = std::optional<std::string>{};
-  utl::skip_lines(out, [&](utl::cstr s) {
-    if (s.substr(0, commit.length()) == commit) {
-      branch = s.substr(commit.length() + 1).to_str();
-      return false;
+  auto const out =
+      e.exec(p, "git for-each-ref --format=%(refname:lstrip=-1) refs/heads")
+          .out_;
+  auto ss = std::istringstream(out);
+  std::string ref;
+  while (ss.good()) {
+    ss >> ref;
+    if (get_commit(p, ref) == commit) {
+      return {ref};
     }
-    return true;
-  });
+  }
 
-  return branch;
+  return {};
 }
 
 std::optional<std::string> as_branch(boost::filesystem::path const& p,
