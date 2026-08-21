@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <set>
 #include <string>
 
@@ -25,6 +26,9 @@ std::string url_to_protocol(std::string url, protocol);
 std::string git_shorten(dep const*, std::string const& commit);
 
 void git_clone(executor&, dep const*, bool clone_https);
+
+std::optional<std::string> as_branch(boost::filesystem::path const&,
+                                     std::string const&);
 
 void git_attach(executor&, dep const*, bool force);
 

@@ -2,7 +2,6 @@
 #include <fmt/base.h>
 
 #include <algorithm>
-#include <optional>
 
 #include <boost/filesystem.hpp>
 
@@ -96,7 +95,7 @@ std::string get_commit(executor& e, boost::filesystem::path const& p,
 
 std::optional<std::string> as_branch(executor& e,
                                      boost::filesystem::path const& p,
-                                     std::string commit) {
+                                     std::string const& commit) {
   auto const out = e.exec(p, "git show-ref --branches").out_;
   auto branch = std::optional<std::string>{};
   utl::skip_lines(out, [&](utl::cstr s) {
@@ -108,6 +107,12 @@ std::optional<std::string> as_branch(executor& e,
   });
 
   return branch;
+}
+
+std::optional<std::string> as_branch(boost::filesystem::path const& p,
+                                     std::string const& commit) {
+  auto e = executor{};
+  return as_branch(e, p, commit);
 }
 
 void git_attach(executor& e, dep const* d, bool const force) {
