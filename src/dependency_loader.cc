@@ -1,6 +1,10 @@
 #include "pkg/dependency_loader.h"
 
+#include <algorithm>
+#include <boost/filesystem/path.hpp>
+#include <queue>
 #include <set>
+#include <utility>
 
 #include "utl/get_or_create.h"
 #include "utl/to_vec.h"
@@ -18,7 +22,7 @@ dependency_loader::dependency_loader(fs::path deps_root)
 
 dependency_loader::~dependency_loader() = default;
 
-dep* dependency_loader::root() { return deps_.at(ROOT); }
+dep* dependency_loader::root() const { return deps_.at(ROOT); }
 
 std::optional<dep*> dependency_loader::resolve(std::string const& url) const {
   if (auto it = deps_.find(url); it == end(deps_)) {
@@ -28,7 +32,7 @@ std::optional<dep*> dependency_loader::resolve(std::string const& url) const {
   }
 }
 
-std::vector<dep*> dependency_loader::sorted() {
+std::vector<dep*> dependency_loader::sorted() const {
   auto written = std::set<dep*>{};
   auto sorted = std::vector<dep*>{};
   auto all = get_all();
@@ -52,6 +56,29 @@ std::vector<dep*> dependency_loader::sorted() {
 
 std::vector<dep*> dependency_loader::get_all() const {
   return utl::to_vec(dep_mem_, [](auto&& d) { return d.get(); });
+}
+
+std::vector<dep*> dependency_loader::get_uniques() const {
+  auto q = std::queue<dep*>{};
+  auto uniques = std::vector<dep*>{};
+
+  q.push(root());
+  while (!q.empty()) {
+    auto d = q.front();
+    q.pop();
+
+    if (std::find_if(begin(uniques), end(uniques), [&](auto const& o) {
+          return o->path_ == d->path_;
+        }) == end(uniques)) {
+      uniques.push_back(d);
+    }
+
+    for (auto const succ : d->succs_) {
+      q.push(succ);
+    }
+  }
+
+  return uniques;
 }
 
 void dependency_loader::retrieve(

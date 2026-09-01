@@ -101,7 +101,9 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
   }();
 
   auto const name = (fs::absolute(repo) / ".pkg.mutex").generic_string();
-  { auto const create_file_if_not_exists = std::ofstream{name}; }
+  {
+    auto const create_file_if_not_exists = std::ofstream{name};
+  }
   auto lock = boost::interprocess::file_lock{name.c_str()};
   if (!lock.try_lock()) {
     std::cout << "waiting for lock" << std::endl;
@@ -143,7 +145,7 @@ void load_deps(fs::path const& repo, fs::path const& deps_root,
   do {
     repeat = false;
     l.retrieve(repo, iterator, recursive);
-    for (auto const& d : l.get_all()) {
+    for (auto const& d : l.get_uniques()) {
       if (d->url_ == ROOT || d->commit_ == get_commit(d->path_)) {
         continue;
       }

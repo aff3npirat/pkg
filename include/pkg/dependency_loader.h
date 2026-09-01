@@ -28,9 +28,10 @@ public:
       iteration_fn_t const& = [](dep*, branch_commit const&) {},
       bool recursive = false);
 
-  dep* root();
-  std::vector<dep*> sorted();
+  dep* root() const;
+  std::vector<dep*> sorted() const;
   std::vector<dep*> get_all() const;
+  std::vector<dep*> get_uniques() const;
   std::optional<dep*> resolve(std::string const& url) const;
 
 private:
