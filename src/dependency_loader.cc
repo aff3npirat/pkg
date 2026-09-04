@@ -3,14 +3,12 @@
 #include <algorithm>
 #include <boost/filesystem/path.hpp>
 #include <queue>
-#include <set>
 #include <utility>
 
 #include "utl/get_or_create.h"
 #include "utl/to_vec.h"
 #include "utl/verify.h"
 
-#include "pkg/git.h"
 #include "pkg/read_deps.h"
 
 namespace fs = boost::filesystem;
@@ -58,9 +56,9 @@ std::vector<dep*> dependency_loader::get_all() const {
   return utl::to_vec(dep_mem_, [](auto&& d) { return d.get(); });
 }
 
-std::vector<dep*> dependency_loader::get_uniques() const {
+std::set<dep*> dependency_loader::get_uniques() const {
   auto q = std::queue<dep*>{};
-  auto uniques = std::vector<dep*>{};
+  auto uniques = std::set<dep*>{};
 
   q.push(root());
   while (!q.empty()) {
@@ -70,7 +68,7 @@ std::vector<dep*> dependency_loader::get_uniques() const {
     if (std::find_if(begin(uniques), end(uniques), [&](auto const& o) {
           return o->path_ == d->path_;
         }) == end(uniques)) {
-      uniques.push_back(d);
+      uniques.insert(d);
     }
 
     for (auto const succ : d->succs_) {

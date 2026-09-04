@@ -6,7 +6,6 @@
 #include <optional>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "boost/filesystem/path.hpp"
@@ -31,7 +30,7 @@ public:
   dep* root() const;
   std::vector<dep*> sorted() const;
   std::vector<dep*> get_all() const;
-  std::vector<dep*> get_uniques() const;
+  std::set<dep*> get_uniques() const;
   std::optional<dep*> resolve(std::string const& url) const;
 
 private:
