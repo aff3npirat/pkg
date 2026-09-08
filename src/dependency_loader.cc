@@ -3,9 +3,12 @@
 #include <algorithm>
 #include <boost/filesystem/path.hpp>
 #include <queue>
+#include <set>
 #include <utility>
 
+#include "pkg/dep.h"
 #include "utl/get_or_create.h"
+#include "utl/pipes/make_range.h"
 #include "utl/to_vec.h"
 #include "utl/verify.h"
 
@@ -54,29 +57,6 @@ std::vector<dep*> dependency_loader::sorted() const {
 
 std::vector<dep*> dependency_loader::get_all() const {
   return utl::to_vec(dep_mem_, [](auto&& d) { return d.get(); });
-}
-
-std::set<dep*> dependency_loader::get_uniques() const {
-  auto q = std::queue<dep*>{};
-  auto uniques = std::set<dep*>{};
-
-  q.push(root());
-  while (!q.empty()) {
-    auto d = q.front();
-    q.pop();
-
-    if (std::find_if(begin(uniques), end(uniques), [&](auto const& o) {
-          return o->path_ == d->path_;
-        }) == end(uniques)) {
-      uniques.insert(d);
-    }
-
-    for (auto const succ : d->succs_) {
-      q.push(succ);
-    }
-  }
-
-  return uniques;
 }
 
 void dependency_loader::retrieve(
