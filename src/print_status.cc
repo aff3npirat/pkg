@@ -1,8 +1,8 @@
 #include "pkg/print_status.h"
-#include <fmt/base.h>
 
 #include <functional>
 
+#include "fmt/base.h"
 #include "fmt/color.h"
 
 #include "pkg/color_output.h"
