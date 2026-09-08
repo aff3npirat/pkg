@@ -1,14 +1,11 @@
 #include "pkg/dependency_loader.h"
 
 #include <algorithm>
-#include <boost/filesystem/path.hpp>
-#include <queue>
-#include <set>
 #include <utility>
 
-#include "pkg/dep.h"
+#include "boost/filesystem/path.hpp"
+
 #include "utl/get_or_create.h"
-#include "utl/pipes/make_range.h"
 #include "utl/to_vec.h"
 #include "utl/verify.h"
 

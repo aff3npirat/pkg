@@ -5,14 +5,14 @@
 #include <memory>
 #include <optional>
 #include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "boost/filesystem/path.hpp"
 
-#include "utl/pipes/all.h"
-
 #include "pkg/dep.h"
+#include "utl/pipes/for_each.h"
 
 namespace pkg {
 
@@ -48,9 +48,11 @@ private:
     q.push(deps_.at(ROOT));
     while (!q.empty()) {
       auto const d = q.front();
-      q.pop();
       uniques.insert(d);
-      q.push_range(utl::all(d->succs_));
+      q.pop();
+      for (auto const succ : d->succs_) {
+        q.push(succ);
+      }
     }
 
     return uniques;
