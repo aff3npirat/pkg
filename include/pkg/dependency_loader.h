@@ -12,7 +12,6 @@
 #include "boost/filesystem/path.hpp"
 
 #include "pkg/dep.h"
-#include "utl/pipes/for_each.h"
 
 namespace pkg {
 
